@@ -54,6 +54,8 @@ $$y= \mu + Tratamiento + e$$
 DBCA
 $$y = \mu + Tratamiento + bloque + e$$
 $$alt\_90d = \mu +enm\_mic + planta + enm\_mic*planta + bloque + e$$
+
+
 ## anova
 ```{r}
 md1 <- aov(formula = alt_90d ~ block + enm_mic + planta + enm_mic * planta, data = fb )
@@ -99,7 +101,7 @@ str(fb)
 
 ## grafico 
 usando el objeto em hacer un grafico de barras usando ggplot2  donde en el eje x este los enm_mic agrupados por planta e incluir significacia 
-
+d
 ```{r}
 library(ggplot2)
 library(dplyr)
@@ -116,17 +118,85 @@ theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ```
 
+
+
+
+
+## Diametro del tallo a los 90 dias
+$$dmt\_90d = \mu +enm\_mic  + block + e$$
+## anova
+```{r}
+md2 <- aov(formula = dmt_90d ~ block + enm_mic , data = fb )
+
+anova(md2)
+```
+utilizando el objeto md2 hacer la comparacion de medias de enm_mic  usando el paquete emmeans e incluir la letras de significacia
+
+```{r}
+library(emmeans)
+library(dplyr)
+
+em_md2 <- emmeans(md2, ~ enm_mic)
+cld_md2 <- cld(em_md2, Letters = letters, adjust = "tukey") %>%
+  as.data.frame()
+
+```
+
+```
+
+##grafico 
+usando el objeto em_md2 hacer un grafico de barras usando ggplot2  donde en el eje x este los enm_mic e cluir significacia
+
+```
+```{r}
+library(emmeans)
+library(ggplot2)
+library(dplyr)
+
+cld_md2 <- cld(em_md2, Letters = letters, adjust = "tukey") %>% as.data.frame()
+
+ggplot(cld_md2, aes(x = enm_mic, y = emmean, fill = block)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = .group), vjust = -0.5,
+            position = position_dodge(width = 0.9), size = 3) +
+  labs(x = "Enm_mic", y = "Mean diameter (90 d)", fill = "Block") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
+
+###ANLISIS MULTIVARIADO
+
+Realizar un PCA usando el paquete FactoMineR de la base de datos de fb. Excluir las variables block y bloque. planta y enm_mic son variables suplmenetarias. 
+
+```{r}
+library(FactoMineR)
+library(factoextra)
+library(dplyr)
+
+pca_res <- PCA(
+  fb %>% select(-block, -bloque),
+  quali.sup = which(names(.) %in% c("planta", "enm_mic")),
+  graph = FALSE
+)
+
+# eigenvalues
+pca_res$eig
+
+# variable contributions plot
+fviz_pca_var(pca_res, col.var = "contrib")
+
+# biplot with supplementary qualitative variables
+fviz_pca_biplot(pca_res, repel = TRUE)
+
 ```
 
 
 
-l
-
-```
 
 
-```
 
-```
+
 
 
