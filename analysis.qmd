@@ -1,0 +1,132 @@
+---
+title: ""
+author: ""
+format:
+  html:
+    toc: true
+    toc-expand: true
+    toc-depth: 4
+    toc-location: left
+    number-sections: true
+    self-contained: true
+    code-fold: true
+    output-file: "ESM"
+editor_options: 
+  chunk_output_type: console
+execute: 
+  warning: false
+  message: false
+  echo: true
+---
+
+# Project Setup
+
+```{r}
+#| label:  setup
+
+source('https://inkaverse.com/setup.r')
+```
+
+# Data import
+
+```{r}
+gs <- "https://docs.google.com/spreadsheets/d/1yDuJLxNZwMRxx1jYKPNnRWNdjNqLKlji3REGgtorRnI/edit?gid=1816154194#gid=1816154194" %>% 
+  as_sheets_id()
+
+fb <- gs %>% 
+  range_read(ss = .,sheet = "fb")
+```
+
+#Analisis de datos
+
+1. Hacer mi diseño experimental
+2. colocar datos 
+3. Importar los datos
+4. Identificar los modelos estadísticos
+5. Analsiis de varianza(ANOVA o ANVA)
+6. Prueba de comparacion de medias
+7. Graficar
+
+#altura de planta a los 90 dias
+DCA
+$$y= \mu + Tratamiento + e$$
+
+DBCA
+$$y = \mu + Tratamiento + bloque + e$$
+$$alt\_90d = \mu +enm\_mic + planta + enm\_mic*planta + bloque + e$$
+## anova
+```{r}
+md1 <- aov(formula = alt_90d ~ block + enm_mic + planta + enm_mic * planta, data = fb )
+
+anova(md1)
+```
+
+```{r}
+md <- aov(formula = alt_90d ~ block + enm_mic, data = fb )
+
+anova(md)
+```
+
+utilizando el objeto md1 hacer la comparacion de medias de enm_mic por Planta usando el paquete emmeans e incluir la letras de significacia 
+
+Usando el modelo md hacer la comparación de medias de enm_mic con el paquete emmeans e incluir las letras de significancia.
+```{r}
+library(emmeans)
+
+# comparaciones de medias para enm_mic con modelo md
+em_md <- emmeans(md, ~ enm_mic)
+cld_md <- cld(em_md, Letters = letters)
+
+# gráfico de barras con letras de significancia
+library(ggplot2)
+
+ggplot(cld_md, aes(x = enm_mic, y = emmean, fill = block)) +
+  geom_col(position = position_dodge(width = 0.9)) +
+  geom_text(aes(label = .group), vjust = -0.5,
+            position = position_dodge(width = 0.9), size = 3) +
+  labs(x = "Enm_mic", y = "Mean altitude (90 d)", fill = "Block") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
+
+
+`
+```{r}
+str(fb)
+```
+
+## grafico 
+usando el objeto em hacer un grafico de barras usando ggplot2  donde en el eje x este los enm_mic agrupados por planta e incluir significacia 
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+cld_df <- cld(em, Letters = letters, adjust = "tukey") %>% as.data.frame()
+
+ggplot(cld_df, aes(x = enm_mic, y = emmean, fill = planta)) +
+geom_col(position = position_dodge(width = 0.9)) +
+geom_text(aes(label = .group), vjust = -0.5,
+position = position_dodge(width = 0.9), size = 3) +
+labs(x = "Enm_mic", y = "Mean altitude (90 d)", fill = "Planta") +
+theme_minimal() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+```
+
+
+
+l
+
+```
+
+
+```
+
+```
+
+
